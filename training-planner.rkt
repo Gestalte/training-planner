@@ -24,14 +24,23 @@
 
 (define add-button (new button%
                         [label "+"]
-                        [parent top-h-panel]))
+                        [parent top-h-panel]
+                        [callback (lambda (button event)
+                                    (add-callback))]))
 
-(define choices '("choice 1" "choice 2"))
+(define choices '())
 
 (define list-display (new list-box%
                           [label ""]
-                          [choices choices]
+                          [choices choices] ; TODO: Figure out how to load from sqlite
                           [parent bot-h-panel]))
+
+; TODO: Figure out how to add an item at the of the list.
+; TODO: Figure out how to add an item to sqlite.
+(define add-callback
+  (lambda ()
+    (set! choices (cons (send item-input get-value) choices))
+    (send list-display set choices)))
 
 (define button-panel (new vertical-panel%
                          [parent bot-h-panel]
