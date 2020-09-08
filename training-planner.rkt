@@ -1,7 +1,6 @@
 #lang racket
 
 (require racket/gui)
-(require sqlite-table)
 
 (define frame (new frame%
                    [label "Training Planner"]))
@@ -28,7 +27,30 @@
                         [callback (lambda (button event)
                                     (add-callback))]))
 
+; Create a container list for keeping track of excercises
 (define choices '())
+
+(define savefile-path (build-path (current-directory) "savefile.txt"))
+
+; Make sure a text file exists
+(with-output-to-file savefile-path #:mode 'text #:exists 'append
+  (lambda () (printf "")))
+
+; §
+
+(define get-savefile-contents
+  (lambda ()
+    (call-with-input-file savefile-path
+      (lambda (in) (read-string in))))) ; TODO: Figure out how to read to the end of a file. Consider using read-line instead.
+
+(define savefile-contents (get-savefile-contents))
+
+(define read-savefile
+  (lambda ()
+    (string-split savefile-contents "§§§")))
+
+; Populate choices
+(set! choices (read-savefile))
 
 (define list-display (new list-box%
                           [label ""]
@@ -49,6 +71,15 @@
 (define remove-button (new button%
                         [label "-"]
                         [parent button-panel]))
+
+(define remove-index-from-list
+  (lambda (x list)
+    (list)))
+
+(define remove-callback
+  (lambda (x)
+    (set! choices (remove-index-from-list x choices))
+    (send list-display set choices)))
 
 (define up-button (new button%
                         [label "^"]
