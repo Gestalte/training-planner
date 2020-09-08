@@ -1,6 +1,18 @@
 #lang racket
 
 (require racket/gui)
+(require "fileaccess.rkt")
+
+(define atom?
+  (lambda (x)
+    (and (not (pair? x)) (not (null? x)))))
+
+(define lat?
+  (lambda (l)
+    (cond
+      ((null? l) #t)
+      ((atom? (car l)) (lat? cdr l))
+      (else #f))))
 
 (define frame (new frame%
                    [label "Training Planner"]))
@@ -30,38 +42,24 @@
 ; Create a container list for keeping track of excercises
 (define choices '())
 
-(define savefile-path (build-path (current-directory) "savefile.txt"))
-
 ; Make sure a text file exists
 (with-output-to-file savefile-path #:mode 'text #:exists 'append
   (lambda () (printf "")))
-
-; §
-
-(define get-savefile-contents
-  (lambda ()
-    (call-with-input-file savefile-path
-      (lambda (in) (read-string in))))) ; TODO: Figure out how to read to the end of a file. Consider using read-line instead.
-
-(define savefile-contents (get-savefile-contents))
-
-(define read-savefile
-  (lambda ()
-    (string-split savefile-contents "§§§")))
 
 ; Populate choices
 (set! choices (read-savefile))
 
 (define list-display (new list-box%
                           [label ""]
-                          [choices choices] ; TODO: Figure out how to load from sqlite
-                          [parent bot-h-panel]))
+                          [choices choices]
+                          [parent bot-h-panel]
+                          [callback (lambda (list-box event)
+                                      (send item-input set-value (send list-display get-string-selection)))]))
 
-; TODO: Figure out how to add an item at the of the list.
-; TODO: Figure out how to add an item to sqlite.
 (define add-callback
   (lambda ()
     (set! choices (cons (send item-input get-value) choices))
+    (save-to-file choices)
     (send list-display set choices)))
 
 (define button-panel (new vertical-panel%
