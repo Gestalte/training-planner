@@ -1,3 +1,4 @@
 *.bak
 /savefile.txt
 *.txt
+/compiled/**
