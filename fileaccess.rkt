@@ -1,19 +1,19 @@
 #lang racket
 
-; savefile-path
-
-(provide savefile-path)
-(define savefile-path (build-path (current-directory) "savefile.txt"))
-
 ; read-savefile
 
-(define savefile-contents (let ([ip (open-input-file savefile-path)])
-      (read-line ip 'any)))
+(define savefile-contents
+  (lambda (path)
+    (let ([ip (open-input-file path)])
+      (read-line ip 'any))))
 
 (provide read-savefile)
-(define read-savefile
-  (lambda ()
-    (string-split savefile-contents "§§§")))
+(define (read-savefile path)
+  (define (ifeof val)
+    (if (eof-object? val)
+        ""
+        val))
+  (string-split (ifeof (savefile-contents path)) "§§§"))
 
 ; save-to-file
 
@@ -25,6 +25,6 @@
 
 (provide save-to-file)
 (define save-to-file
-  (lambda (l)
-    (with-output-to-file savefile-path #:mode 'text #:exists 'replace
+  (lambda (l path)
+    (with-output-to-file path #:mode 'text #:exists 'replace
       (lambda () (printf (list-to-string "" l))))))
